@@ -65,3 +65,12 @@ flutter {
 }
 
 dependencies {}
+
+
+
+android {
+    defaultConfig {
+        // Add this line
+        multiDexEnabled true
+    }
+}

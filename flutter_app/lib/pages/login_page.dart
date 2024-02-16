@@ -3,6 +3,8 @@ import 'package:flutter_app/components/my_button.dart';
 import 'package:flutter_app/components/my_textfield.dart';
 import 'package:flutter_app/components/square_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_app/services/auth/auth.service.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -18,7 +20,25 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void signUserIn() async {
+  void signIn() async {
+    //get auth service
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    try {
+      await authService.signInWithEmailAndPassword(
+        emailController.text,
+        passwordController.text,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e.toString(),
+          ),
+        ),
+      );
+    }
+
     // Show loading circle
     showDialog(
       context: context,
@@ -60,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
           content: Center(
             child: Text(
               message,
-              style:  TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
           actions: <Widget>[
@@ -117,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children:  [
+                    children: [
                       Text(
                         'Forgot Password',
                         style: TextStyle(color: Colors.grey[600]),
@@ -128,19 +148,19 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 25),
                 // Sign in button
                 MyButton(
-                  text: "Sign In" ,
-                  onTap: signUserIn,
+                  text: "Sign In",
+                  onTap: signIn,
                 ),
                 const SizedBox(height: 25),
                 // Or continue with
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: Row(
-                    children:  [
+                    children: [
                       Expanded(
                         child: Divider(
                           thickness: 0.5,
-                          color:  Colors.grey[400],
+                          color: Colors.grey[400],
                         ),
                       ),
                       Padding(

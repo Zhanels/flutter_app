@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/my_button.dart';
 import 'package:flutter_app/components/my_textfield.dart';
 import 'package:flutter_app/components/square_tile.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_app/services/auth/auth.service.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatefulWidget {
   final Function()? onTap;
@@ -19,77 +20,34 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  void signUserUp() async {
-    // Show loading circle
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
+  void signUp(BuildContext context) async {
+    // Check if passwords match
+    if (passwordController.text != confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Passwords do not match!"),
+        ),
+      );
+      return;
+    }
 
-// try creating user
+    // Get auth service
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     try {
-      if (passwordController.text == confirmPasswordController.text) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-
-
-
-        _fireStore.collection('users').doc(UserCredential.user!.uid).set({
-          'uid': UserCredential.user!.uid,
-          'email': email,
-          
-        );
-      } else {
-        // show error message password dont match
-        showErrorMessage("Passwords don't match!");
-      }
-
-      // Pop loading circle
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      // Pop loading circle
-      Navigator.pop(context);
-      // Show error message
-      showErrorMessage(e.code);
+      await authService.signUpWithEmailAndPassword(
+        emailController.text,
+        passwordController.text,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
     }
   }
 
-  // Wrong email message popup
-  void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.deepPurple,
-          title: const Center(
-            child: Text(
-              'Error',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          content: Center(
-            child: Text(
-              message,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Sign in button
                 MyButton(
                   text: "Sign Up ",
-                  onTap: signUserUp,
+                 onTap: () => signUp(context),
                 ),
                 const SizedBox(height: 25),
                 // Or continue with
