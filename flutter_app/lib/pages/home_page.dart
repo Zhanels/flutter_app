@@ -26,10 +26,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
- 
+
 
   // sign user out
-  void signUserOut() {
+  void signOut() {
     final authService = Provider.of<AuthService>(context, listen: false);
     authService.signOut();
   }
@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home Page'),
-        actions: [IconButton(onPressed: signUserOut, icon: Icon(Icons.logout))],
+        actions: [IconButton(onPressed: signOut, icon: Icon(Icons.logout))],
       ),
       body: Center(child: Text("Logged in as: ${user?.email ?? 'Unknown'}")),
     );

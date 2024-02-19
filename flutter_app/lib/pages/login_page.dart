@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/my_button.dart';
 import 'package:flutter_app/components/my_textfield.dart';
 import 'package:flutter_app/components/square_tile.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/services/auth/auth.service.dart';
 import 'package:provider/provider.dart';
 
@@ -20,8 +19,11 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
+      GlobalKey<ScaffoldMessengerState>();
+
   void signIn() async {
-    //get auth service
+    // Get auth service
     final authService = Provider.of<AuthService>(context, listen: false);
 
     try {
@@ -30,75 +32,28 @@ class _LoginPageState extends State<LoginPage> {
         passwordController.text,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          e.toString(),
+      _scaffoldKey.currentState!.showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
           ),
         ),
       );
     }
-
-    // Show loading circle
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
-
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      // Pop loading circle
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      // Pop loading circle
-      Navigator.pop(context);
-      // Show error message
-      showErrorMessage(e.code);
-    }
   }
 
-  // Wrong email message popup
-  void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.deepPurple,
-          title: const Center(
-            child: Text(
-              'Error',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          content: Center(
-            child: Text(
-              message,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    // Dispose controllers
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.grey[300],
       body: SafeArea(
         child: Center(
@@ -118,12 +73,14 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
+
                 // Username text field
                 MyTextfield(
                   controller: emailController,
                   hintText: 'Email',
                   obscureText: false,
                 ),
+
                 const SizedBox(height: 10),
                 // Password text field
                 MyTextfield(
@@ -131,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                   hintText: 'Password',
                   obscureText: true,
                 ),
+
                 const SizedBox(height: 10),
                 // Forgot password
                 Padding(
@@ -146,12 +104,14 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
+
                 // Sign in button
                 MyButton(
                   text: "Sign In",
                   onTap: signIn,
                 ),
                 const SizedBox(height: 25),
+
                 // Or continue with
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -183,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Google and Apple sign-in buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     // Google
                     SquareTile(imagePath: 'lib/images/google.png'),
                     SizedBox(width: 15),
@@ -192,6 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 const SizedBox(height: 25),
+
                 // Not a member? Register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

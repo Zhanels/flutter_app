@@ -64,7 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 50),
                 // Welcome back, you've been missed!
                 const Text(
-                  'Welcome back, you\'ve been missed',
+                  "Let's create an account for you! ",
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 16,
