@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/chat_Page.dart';
 import 'package:flutter_app/services/auth/auth.service.dart';
 import 'package:provider/provider.dart';
 
@@ -14,10 +16,12 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
 
   // create new user
-  Future<UserCredential> signUpWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential> signUpWithEmailAndPassword(
+      String email, String password) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email, 
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
         password: password,
       );
       return userCredential;
@@ -25,8 +29,6 @@ class _HomePageState extends State<HomePage> {
       throw Exception(e.code);
     }
   }
-
-
 
   // sign user out
   void signOut() {
@@ -41,7 +43,51 @@ class _HomePageState extends State<HomePage> {
         title: Text('Home Page'),
         actions: [IconButton(onPressed: signOut, icon: Icon(Icons.logout))],
       ),
-      body: Center(child: Text("Logged in as: ${user?.email ?? 'Unknown'}")),
+      body: _buildUserList(),
     );
+  }
+
+  Widget _buildUserList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Text('Loading...');
+        }
+
+        return ListView(
+          children: snapshot.data!.docs
+              .map<Widget>((doc) => _buildUserListItem(doc))
+              .toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildUserListItem(DocumentSnapshot document) {
+    Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+    if (FirebaseAuth.instance.currentUser!.email != data['email']) {
+      return ListTile(
+        title: Text(data['email']),
+        onTap: () {
+          // pass the clicked users uid to that chats page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                receiverUserEmail: data['email'],
+                receiverUserID: data['uid'],
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      // return empty container
+      return Container();
+    }
   }
 }
